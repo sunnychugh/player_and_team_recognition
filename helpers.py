@@ -59,3 +59,12 @@ def generate_player_info(dir_path, check_invalid_images_flag=None):
     df_player_info["players"] = df_player_info["players"].map(players_dic)
     return df_player_info, teams_dic, players_dic
 
+
+def split_data(df_player_info, test_size=0.2):
+    train_data = df_player_info.sample(frac=1 - test_size)
+    valid_data = df_player_info.drop(train_data.index)
+    data = {
+        phase: train_data if phase == "train" else valid_data
+        for phase in ["train", "valid"]
+    }
+    return data
