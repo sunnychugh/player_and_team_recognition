@@ -5,24 +5,36 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 
+
 class Model(nn.Module):
-    def __init__(self, pretrained, model_name, teams_dic_len, players_dic_len, args):
+    def __init__(
+        self, pretrained, model_name, teams_dic_len, players_dic_len, data, args
+    ):
         """ model_name = [resnet34, resnet50, densenet161, inceptionresnetv2]  """
         super(Model, self).__init__()
+
+        self.data = data
+
         if pretrained is True:
             self.model = pretrainedmodels.__dict__[model_name](pretrained="imagenet")
         else:
             self.model = pretrainedmodels.__dict__[model_name](pretrained=None)
 
         if args.pretrained_model == "resnet18" or args.pretrained_model == "resnet34":
-            self.fc1 = nn.Linear(512, teams_dic_len)  # For Teams class
-            self.fc2 = nn.Linear(512, players_dic_len)  # For players class
+            # self.fc1 = nn.Linear(512, teams_dic_len)  # For Teams class
+            # self.fc2 = nn.Linear(512, players_dic_len)  # For players class
+            self.fc1 = nn.Sequential(nn.Linear(512, 256), nn.ReLU(), nn.Dropout(0.2),nn.Linear(256, teams_dic_len))
+            self.fc2 = nn.Sequential(nn.Linear(512, 256), nn.ReLU(), nn.Dropout(0.2),nn.Linear(256, players_dic_len))
         elif args.pretrained_model == "densenet161":
-            self.fc1 = nn.Linear(2208, teams_dic_len)
-            self.fc2 = nn.Linear(2208, players_dic_len)
+            # self.fc1 = nn.Linear(2208, teams_dic_len)
+            # self.fc2 = nn.Linear(2208, players_dic_len)
+            self.fc1 = nn.Sequential(nn.Linear(2208, 256), nn.ReLU(), nn.Dropout(0.2),nn.Linear(256, teams_dic_len))
+            self.fc2 = nn.Sequential(nn.Linear(2208, 256), nn.ReLU(), nn.Dropout(0.2),nn.Linear(256, players_dic_len))
         elif args.pretrained_model == "inceptionresnetv2":
-            self.fc1 = nn.Linear(1536, teams_dic_len)
-            self.fc2 = nn.Linear(1536, players_dic_len)
+            # self.fc1 = nn.Linear(1536, teams_dic_len)
+            # self.fc2 = nn.Linear(1536, players_dic_len)
+            self.fc1 = nn.Sequential(nn.Linear(1536, 256), nn.ReLU(), nn.Dropout(0.2),nn.Linear(256, teams_dic_len))
+            self.fc2 = nn.Sequential(nn.Linear(1536, 256), nn.ReLU(), nn.Dropout(0.2),nn.Linear(256, players_dic_len))
 
     def forward(self, x):
         bs, _, _, _ = x.shape
@@ -48,13 +60,23 @@ class Model(nn.Module):
         return criterions, optimizer
 
     def train_model(
-        self, model, dataloaders, criterions, optimizer, device, n_epochs=4
+        self,
+        model,
+        dataloaders,
+        criterions,
+        optimizer,
+        device,
+        n_epochs=4,
+        show_plot=None,
     ):
         """returns trained model"""
 
         valid_loss_min = np.Inf
         running_loss = {}
+        running_corrects = {}
+        running_accuracy = {}
         running_loss_record = {"train": [], "valid": []}
+        running_accuracy_record = {"train": [], "valid": []}
         for epoch in range(n_epochs):
             for phase in ["train", "valid"]:
                 if phase == "train":
@@ -63,6 +85,8 @@ class Model(nn.Module):
                     model.eval()  # Set model to evaluate mode
 
                 running_loss[phase] = 0.0
+                running_accuracy[phase] = 0.0
+                running_corrects[phase] = 0.0
 
                 for batch_idx, sample_batched in enumerate(dataloaders[phase]):
                     # importing data and moving to GPU
@@ -76,7 +100,7 @@ class Model(nn.Module):
                         optimizer.zero_grad()
 
                     # RuntimeError: expected scalar type Byte but found Float
-                    image = image.float()
+                    # image = image.float()
 
                     output = model(image)
                     label1_hat = output["label1"]
@@ -90,19 +114,37 @@ class Model(nn.Module):
                     )
                     loss = loss1 + loss2
 
+                    # Calculate accuracy
+                    _, pred_label1 = torch.max(output["label1"], 1)
+                    _, pred_label2 = torch.max(output["label2"], 1)
+                    running_corrects[phase] += torch.sum(
+                        (pred_label1 == label1) & (pred_label2 == label2)
+                    )
+
                     if phase == "train":
                         loss.backward()
                         optimizer.step()
 
-                    running_loss[phase] = running_loss[phase] + (
-                        (1 / (batch_idx + 1)) * (loss.data - running_loss[phase])
+                    running_loss[phase] += (1 / (batch_idx + 1)) * (
+                        loss.data - running_loss[phase]
                     )
 
-            running_loss_record['train'].append(running_loss["train"])
-            running_loss_record['valid'].append(running_loss["valid"])
+                # running_accuracy[phase] = running_corrects[phase]/len(dataloaders[phase])
+                running_accuracy[phase] = running_corrects[phase] / len(
+                    self.data[phase]
+                )
+
+            running_loss_record["train"].append(running_loss["train"])
+            running_loss_record["valid"].append(running_loss["valid"])
+            running_accuracy_record["train"].append(running_accuracy["train"])
+            running_accuracy_record["valid"].append(running_accuracy["valid"])
             print(
-                "Epoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}".format(
-                    epoch + 1, running_loss["train"], running_loss["valid"]
+                "Epoch: {} \tTraining Loss: {:.4f} \tValidation Loss: {:.4f} \tTraining Acc: {:.4f} \tValidation Acc: {:.4f}".format(
+                    epoch + 1,
+                    running_loss["train"],
+                    running_loss["valid"],
+                    running_accuracy["train"],
+                    running_accuracy["valid"],
                 )
             )
 
@@ -113,8 +155,18 @@ class Model(nn.Module):
             #                 valid_loss_min, running_loss['valid']))
             #         valid_loss_min = running_loss['valid']
 
-        plt.plot(range(1, n_epochs+1), running_loss_record['train'])
-        plt.plot(range(1, n_epochs+1), running_loss_record['valid'])
-        plt.legend(["Training Loss", "Validation Loss"])
-        plt.show()
+        if show_plot:
+            # plt.figure(figsize=(7, 7))
+            plt.subplot(121)
+            plt.plot(range(1, n_epochs + 1), running_loss_record["train"])
+            plt.plot(range(1, n_epochs + 1), running_loss_record["valid"])
+            plt.xlabel("Epochs")
+            plt.legend(["Training Loss", "Validation Loss"])
+            plt.subplot(122)
+            plt.plot(range(1, n_epochs + 1), running_accuracy_record["train"])
+            plt.plot(range(1, n_epochs + 1), running_accuracy_record["valid"])
+            plt.xlabel("Epochs")
+            plt.legend(["Training Accuracy", "Validation Accuracy"])
+            plt.show()
+
         return model
