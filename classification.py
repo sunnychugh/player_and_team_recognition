@@ -46,7 +46,6 @@ class Classification(Dataset):
 
         sample = {"images": image, "teams": label1, "players": label2}
 
-
         # Apply transformation
         if self.transform:
             sample = self.transform(sample)

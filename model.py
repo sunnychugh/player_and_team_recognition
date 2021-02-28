@@ -1,21 +1,28 @@
 import pretrainedmodels
-from torch import nn
+from torch import nn, optim
 from torch.nn import functional as F
 import numpy as np
 import torch
-
+import matplotlib.pyplot as plt
 
 class Model(nn.Module):
-    def __init__(self, pretrained, model_name, teams_dic_len, players_dic_len):
-        """ model_name = ['resnet34', 'resnet50', 'mobilenetv2']  """
+    def __init__(self, pretrained, model_name, teams_dic_len, players_dic_len, args):
+        """ model_name = [resnet34, resnet50, densenet161, inceptionresnetv2]  """
         super(Model, self).__init__()
         if pretrained is True:
             self.model = pretrainedmodels.__dict__[model_name](pretrained="imagenet")
         else:
             self.model = pretrainedmodels.__dict__[model_name](pretrained=None)
-        # print(self.model)
-        self.fc1 = nn.Linear(512, teams_dic_len)  # For Teams class
-        self.fc2 = nn.Linear(512, players_dic_len)  # For players class
+
+        if args.pretrained_model == "resnet18" or args.pretrained_model == "resnet34":
+            self.fc1 = nn.Linear(512, teams_dic_len)  # For Teams class
+            self.fc2 = nn.Linear(512, players_dic_len)  # For players class
+        elif args.pretrained_model == "densenet161":
+            self.fc1 = nn.Linear(2208, teams_dic_len)
+            self.fc2 = nn.Linear(2208, players_dic_len)
+        elif args.pretrained_model == "inceptionresnetv2":
+            self.fc1 = nn.Linear(1536, teams_dic_len)
+            self.fc2 = nn.Linear(1536, players_dic_len)
 
     def forward(self, x):
         bs, _, _, _ = x.shape
@@ -47,6 +54,7 @@ class Model(nn.Module):
 
         valid_loss_min = np.Inf
         running_loss = {}
+        running_loss_record = {"train": [], "valid": []}
         for epoch in range(n_epochs):
             for phase in ["train", "valid"]:
                 if phase == "train":
@@ -90,6 +98,8 @@ class Model(nn.Module):
                         (1 / (batch_idx + 1)) * (loss.data - running_loss[phase])
                     )
 
+            running_loss_record['train'].append(running_loss["train"])
+            running_loss_record['valid'].append(running_loss["valid"])
             print(
                 "Epoch: {} \tTraining Loss: {:.6f} \tValidation Loss: {:.6f}".format(
                     epoch + 1, running_loss["train"], running_loss["valid"]
@@ -103,4 +113,8 @@ class Model(nn.Module):
             #                 valid_loss_min, running_loss['valid']))
             #         valid_loss_min = running_loss['valid']
 
+        plt.plot(range(1, n_epochs+1), running_loss_record['train'])
+        plt.plot(range(1, n_epochs+1), running_loss_record['valid'])
+        plt.legend(["Training Loss", "Validation Loss"])
+        plt.show()
         return model
