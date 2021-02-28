@@ -1,71 +1,42 @@
-appdirs==1.4.4
-backcall @ file:///home/ktietz/src/ci/backcall_1611930011877/work
-black @ file:///home/conda/feedstock_root/build_artifacts/black-recipe_1599478779128/work
-certifi==2020.12.5
-cffi==1.14.3
-click==7.1.2
-colorama @ file:///tmp/build/80754af9/colorama_1607707115595/work
-cryptography==3.2
+backcall==0.2.0
+colorama==0.4.4
 cycler==0.10.0
-decorator @ file:///home/ktietz/src/ci/decorator_1611930055503/work
-distlib==0.3.1
-esp-windows-curses==0.1
-filelock==3.0.12
-future==0.18.2
+decorator==4.4.2
 imageio==2.9.0
-ipykernel @ file:///C:/ci/ipykernel_1596190155316/work/dist/ipykernel-5.3.4-py3-none-any.whl
-ipython @ file:///C:/ci/ipython_1612212935303/work
-ipython-genutils @ file:///tmp/build/80754af9/ipython_genutils_1606773439826/work
-jedi==0.17.0
-joblib==1.0.1
-jupyter-client @ file:///tmp/build/80754af9/jupyter_client_1601311786391/work
-jupyter-core @ file:///C:/ci/jupyter_core_1612213356021/work
+ipykernel==5.5.0
+ipython==7.21.0
+ipython-genutils==0.2.0
+jedi==0.18.0
+jupyter-client==6.1.11
+jupyter-core==4.7.1
 kiwisolver==1.3.1
 matplotlib==3.3.4
-mkl-fft==1.2.1
-mkl-random==1.1.1
-mkl-service==2.3.0
 munch==2.5.0
-mypy-extensions @ file:///D:/bld/mypy_extensions_1610127447970/work
-nb-black==1.0.7
 networkx==2.5
-numpy @ file:///C:/ci/numpy_and_numpy_base_1603466732592/work
-olefile==0.46
+numpy==1.20.1
 opencv-python==4.5.1.48
 pandas==1.2.2
-parso @ file:///tmp/build/80754af9/parso_1607623074025/work
-pathspec @ file:///home/conda/feedstock_root/build_artifacts/pathspec_1605120834673/work
-pickleshare @ file:///tmp/build/80754af9/pickleshare_1606932040724/work
-Pillow @ file:///C:/ci/pillow_1609786840597/work
+parso==0.8.1
+pickleshare==0.7.5
+Pillow==8.1.0
 pretrainedmodels==0.7.4
-prompt-toolkit @ file:///tmp/build/80754af9/prompt-toolkit_1602688806899/work
-pycparser==2.20
-pyelftools==0.27
-Pygments @ file:///tmp/build/80754af9/pygments_1613849567472/work
-pyparsing==2.3.1
-pyserial==3.4
-python-dateutil @ file:///home/ktietz/src/ci/python-dateutil_1611928101742/work
+prompt-toolkit==3.0.16
+Pygments==2.8.0
+pyparsing==2.4.7
+python-dateutil==2.8.1
 pytz==2021.1
 PyWavelets==1.1.1
-pywin32==227
-pyzmq==20.0.0
-regex @ file:///D:/bld/regex_1610146973989/work
+# pywin32==300
+pyzmq==22.0.3
 scikit-image==0.18.1
-scikit-learn==0.24.1
 scipy==1.6.1
 six==1.15.0
-sklearn==0.0
-threadpoolctl==2.1.0
-tifffile==2021.2.1
-toml @ file:///home/conda/feedstock_root/build_artifacts/toml_1604308577558/work
+tifffile==2021.2.26
 torch==1.7.1
 torchaudio==0.7.2
 torchvision==0.8.2
-tornado @ file:///C:/ci/tornado_1606942392901/work
-tqdm==4.57.0
-traitlets @ file:///home/ktietz/src/ci/traitlets_1611929699868/work
-typed-ast @ file:///D:/bld/typed-ast_1609539425418/work
-typing-extensions @ file:///home/ktietz/src/ci_mi/typing_extensions_1612808209620/work
-wcwidth @ file:///tmp/build/80754af9/wcwidth_1593447189090/work
-wincertstore==0.2
-windows-curses==2.1.0
+tornado==6.1
+tqdm==4.58.0
+traitlets==5.0.5
+typing-extensions==3.7.4.3
+wcwidth==0.2.5
