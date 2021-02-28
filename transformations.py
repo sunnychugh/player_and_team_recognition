@@ -17,6 +17,7 @@ class Resize(object):
 
 class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
+
     def __call__(self, sample):
         image, label1, label2 = sample["images"], sample["teams"], sample["players"]
 
@@ -32,10 +33,13 @@ class ToTensor(object):
 
 
 class Normalization(object):
-    def __init__(self, mean, std):
-        self.mean = mean.view(-1, 1, 1)
-        self.std = std.view(-1, 1, 1)
+    def __init__(self):
+        self.mean = torch.tensor([0.485, 0.456, 0.406]).view(-1, 1, 1)
+        self.std = torch.tensor([0.229, 0.224, 0.225]).view(-1, 1, 1)
 
     def __call__(self, sample):
         image, label1, label2 = sample["images"], sample["teams"], sample["players"]
+        # Use one of the below normalization method
+        image = self.std * image + self.mean
+        # image = image / 255
         return {"images": image, "teams": label1, "players": label2}
