@@ -5,13 +5,6 @@ import pandas as pd
 from skimage import io
 
 
-# Set options to display outputs on terminal
-pd.set_option("display.max_rows", 100)
-# pd.set_option("display.max_columns", 15)
-pd.set_option("display.max_colwidth", 150)  # Use 150 or None (for full length text)
-pd.set_option("display.width", 1000)
-
-
 def check_path_exists(path, name):
     if not os.path.exists(path):
         print(path + " doesn't exists...")
