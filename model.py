@@ -25,6 +25,21 @@ class Model(nn.Module):
         label2 = self.fc2(x)
         return {"label1": label1, "label2": label2}
 
+    def compilation_parameters(self, model_CNN, args):
+        # For multilabel output: Same criterion here for 'teams' and 'players', but can change as required
+        criterions = {
+            phase: nn.CrossEntropyLoss() if phase == "teams" else nn.CrossEntropyLoss()
+            for phase in ["teams", "players"]
+        }
+
+        if args.optimizer == "adam":
+            optimizer = optim.Adam(model_CNN.parameters(), lr=args.learning_rate)
+        elif args.optimizer == "sgd":
+            optimizer = optim.SGD(
+                model_CNN.parameters(), lr=args.learning_rate, momentum=0.9
+            )
+        return criterions, optimizer
+
     def train_model(
         self, model, dataloaders, criterions, optimizer, device, n_epochs=4
     ):
