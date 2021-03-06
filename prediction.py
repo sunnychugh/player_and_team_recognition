@@ -9,6 +9,16 @@ import matplotlib.pyplot as plt
 
 class Prediction:
     def __init__(self, model, test_transform, teams_dic, players_dic):
+        """
+        Set the parameters and initialize few color RGB values to be used for shading.
+            Parameters:
+                model (Pytorch model): Pythorch model generated/saved after training.
+                test_transform: Test tranformation to be performed on the test images.
+                teams_dic (dictionary): Mapped team names with corresponding integers
+                    for classification.
+                players_dic (dictionary): Mapped player numbers with corresponding
+                    integers for classification.
+        """
         self.model = model
         self.test_transform = test_transform
         self.teams_dic = teams_dic
@@ -23,8 +33,17 @@ class Prediction:
             "6": (255, 0, 255),
         }
 
-    def predict_image(self, image, predict_flag=None):
-        """ Prediction on a single image """
+    def predict_image(self, image, predict_flag=False):
+        """
+        Prediction on a single image.
+            Parameters:
+                image (tensor): Tensor array of the image to be predicted.
+                predict_flag (bool): Perform transformation on the image if
+                    predict_flag is True.
+            Returns:
+                pred_label1.item() (int): Predicted label for team.
+                pred_label2.item() (int): Predicted label for player number.
+        """
 
         transformed_dataset = classification.Classification(
             transform=self.test_transform,
@@ -36,8 +55,6 @@ class Prediction:
         # Add a fourth dimension to the beginning to indicate batch size
         image = image[np.newaxis, :]
 
-        # RuntimeError: expected scalar type Byte but found Float
-        # image = image.float()
         output = self.model(image)
         # print("outputs:", output["label1"], output["label2"])
         _, pred_label1 = torch.max(output["label1"], 1)
@@ -46,8 +63,15 @@ class Prediction:
         return pred_label1.item(), pred_label2.item()
 
     def predict_images_in_directory(
-        self, test_images_path, check_invalid_images_flag=None
+        self, test_images_path, check_invalid_images_flag=False
     ):
+        """
+        Prediction on the images present in a directory and display the results.
+            Parameters:
+                test_images_path (str): Path of directory where images are present.
+                check_invalid_images_flag (bool): Check first if the image is valid or not.
+        """
+
         test_images_path = glob.glob(test_images_path + "\**.jpg")
 
         for image_path in test_images_path:
@@ -60,16 +84,30 @@ class Prediction:
                     continue
 
             image = cv2.imread(image_path)
-            print('Image path:', image_path)
+            print("Test image path:", image_path)
             team, player_no = self.predict_image(image, predict_flag=True)
-            print(f"Predictions- team: {team}, player_no: {player_no}")
+            # print(f"Predictions- team: {team}, player_no: {player_no}")
             team_name = [key for key, val in self.teams_dic.items() if val == team]
-            player_no_name = [key for key, val in self.players_dic.items() if val == player_no]
-            print(f"Predictions- Team: {team_name[0]}, Player_no: {player_no_name[0]}\n")
+            player_no_name = [
+                key for key, val in self.players_dic.items() if val == player_no
+            ]
+            print(
+                f"Predictions   - Team: {team_name[0]}, Player_no: {player_no_name[0]}\n"
+            )
 
-    def predict_and_color_section_of_images(self, csv_file_dir, show_plot=None):
+    def predict_and_color_section_of_images(self, csv_file_dir, show_plot=False):
+        """
+        Extract the small sections from an image based on the information in the csv file,
+        and perform the prediction on each section and then color the section based on
+        the prediction values.
+        Also, will save these colored images in the same directory with names appended 
+        with '_team' and '_player_no' depending on the prediction type.
+            Parameters:
+                csv_file_dir (str): Path of csv file directory.
+                show_plot (bool): Display the colored section images if show_plot is True.
+        """
         for csv_file in glob.glob(csv_file_dir + "\\*.csv"):
-            print('csv_file:', csv_file)
+            print("\n\nCSV File:", csv_file)
 
             image_path = csv_file[:-3] + "jpg"
             invalid = check_for_invalid_image(image_path)
@@ -115,6 +153,8 @@ class Prediction:
                     plt.figure(figsize=(15, 15))
                     plt.subplot(121)
                     plt.imshow(output_team)
+                    plt.title("w.r.t Teams")
                     plt.subplot(122)
                     plt.imshow(output_player_no)
+                    plt.title("w.r.t Player_no")
                     plt.show()
