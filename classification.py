@@ -5,13 +5,19 @@ import numpy as np
 
 
 class Classification(Dataset):
-    def __init__(self, player_info=None, transform=None, predict_flag=None, predict_image=None):
+    """Generate the custom dataset and apply transformations."""
+
+    def __init__(
+        self, player_info=None, transform=None, predict_flag=None, predict_image=None
+    ):
         """
-        Args:
-            df_player_info (pandas): Dictionary with information about
-            each player team and number.
-            transform (callable, optional): Optional transform to be applied
-                on a sample.
+        Parameters:
+            player_info (pd.DataFrame): Dictionary with information about each player
+                team and number.
+            transform (callable, optional): Optional transform to be applied on a sample.
+            predict_flag (bool): Perform transformation on the image if predict_flag is True.
+            predict_image (bool): Perform transformation on the single image or on the
+                pandas dataframe with image path, team and player number information.
         """
         self.df_player_info = player_info
         self.transform = transform
@@ -25,6 +31,12 @@ class Classification(Dataset):
             return len(self.df_player_info)
 
     def __getitem__(self, idx):
+        """
+        Perform the transformation with the defined parameters.
+        Returns:
+            sample (dictionary): Dictionary with transformed information.
+        """
+
         if torch.is_tensor(idx):
             idx = idx.tolist()
 
@@ -51,6 +63,3 @@ class Classification(Dataset):
             sample = self.transform(sample)
 
         return sample
-
-
-
