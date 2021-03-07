@@ -42,9 +42,10 @@ class ToTensor(object):
 
 class Normalization(object):
     """
-    Normalize the images in the range (0,1).
+    Normalize the images in the range [0,1].
         Returns: Normalized vectors of images with teams and player number information.
     """
+
     def __init__(self):
         self.mean = torch.tensor([0.485, 0.456, 0.406]).view(-1, 1, 1)
         self.std = torch.tensor([0.229, 0.224, 0.225]).view(-1, 1, 1)

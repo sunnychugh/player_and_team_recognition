@@ -56,10 +56,8 @@ class Prediction:
         image = image[np.newaxis, :]
 
         output = self.model(image)
-        # print("outputs:", output["label1"], output["label2"])
         _, pred_label1 = torch.max(output["label1"], 1)
         _, pred_label2 = torch.max(output["label2"], 1)
-        # print(f"pred_index-team: {pred_label1.item()}, player_no: {pred_label2.item()}")
         return pred_label1.item(), pred_label2.item()
 
     def predict_images_in_directory(
@@ -86,7 +84,6 @@ class Prediction:
             image = cv2.imread(image_path)
             print("Test image path:", image_path)
             team, player_no = self.predict_image(image, predict_flag=True)
-            # print(f"Predictions- team: {team}, player_no: {player_no}")
             team_name = [key for key, val in self.teams_dic.items() if val == team]
             player_no_name = [
                 key for key, val in self.players_dic.items() if val == player_no
@@ -100,7 +97,7 @@ class Prediction:
         Extract the small sections from an image based on the information in the csv file,
         and perform the prediction on each section and then color the section based on
         the prediction values.
-        Also, will save these colored images in the same directory with names appended 
+        Also, will save these colored images in the same directory with names appended
         with '_team' and '_player_no' depending on the prediction type.
             Parameters:
                 csv_file_dir (str): Path of csv file directory.
@@ -127,7 +124,6 @@ class Prediction:
                     tl = line[:2]
                     br = line[2:]
 
-                    # ROI = image[y1:y2, x1:x2]
                     image_roi = image[tl[1] : br[1], tl[0] : br[0]]
                     # Predict the labels for team and player_no
                     team, player_no = self.predict_image(image_roi, predict_flag=True)
@@ -146,6 +142,7 @@ class Prediction:
                         output_player_no, 1.0, blk, 0.5, 1
                     )
 
+                # Save shaded images for team and player number
                 cv2.imwrite(image_path[:-4] + "_team.jpg", output_team)
                 cv2.imwrite(image_path[:-4] + "_player_no.jpg", output_player_no)
 

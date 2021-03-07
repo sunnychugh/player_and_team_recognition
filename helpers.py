@@ -29,6 +29,7 @@ def check_for_invalid_image(image_path):
     try:
         io.imread(image_path)
         return [False]
+    # Can write specific exceptions also, but keeping it all together for now
     except Exception as e:
         return [True, e]
 
