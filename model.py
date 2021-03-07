@@ -1,13 +1,13 @@
 import pretrainedmodels
 from torch import nn, optim
 from torch.nn import functional as F
-import numpy as np
 import torch
 import matplotlib.pyplot as plt
-import time
+
 
 class Model(nn.Module):
     """Generate the Pytorch model"""
+
     def __init__(
         self, pretrained, model_name, teams_dic_len, players_dic_len, data, args
     ):
@@ -25,25 +25,65 @@ class Model(nn.Module):
         self.data = data
         self.dropout = 0.0
 
-        if pretrained is True:
+        if pretrained:
             self.model = pretrainedmodels.__dict__[model_name](pretrained="imagenet")
         else:
             self.model = pretrainedmodels.__dict__[model_name](pretrained=None)
 
         if args.pretrained_model == "resnet18" or args.pretrained_model == "resnet34":
             # For Teams class
-            self.fc1 = nn.Sequential(nn.Linear(512, 256), nn.ReLU(), nn.Dropout(self.dropout),nn.Linear(256, teams_dic_len))
+            self.fc1 = nn.Sequential(
+                nn.Linear(512, 256),
+                nn.ReLU(),
+                nn.Dropout(self.dropout),
+                nn.Linear(256, teams_dic_len),
+            )
             # For players class
-            self.fc2 = nn.Sequential(nn.Linear(512, 256), nn.ReLU(), nn.Dropout(self.dropout),nn.Linear(256, players_dic_len))
+            self.fc2 = nn.Sequential(
+                nn.Linear(512, 256),
+                nn.ReLU(),
+                nn.Dropout(self.dropout),
+                nn.Linear(256, players_dic_len),
+            )
         elif args.pretrained_model == "resnet50":
-            self.fc1 = nn.Sequential(nn.Linear(2048, 256), nn.ReLU(), nn.Dropout(self.dropout),nn.Linear(256, teams_dic_len))
-            self.fc2 = nn.Sequential(nn.Linear(2048, 256), nn.ReLU(), nn.Dropout(self.dropout),nn.Linear(256, players_dic_len))
+            self.fc1 = nn.Sequential(
+                nn.Linear(2048, 256),
+                nn.ReLU(),
+                nn.Dropout(self.dropout),
+                nn.Linear(256, teams_dic_len),
+            )
+            self.fc2 = nn.Sequential(
+                nn.Linear(2048, 256),
+                nn.ReLU(),
+                nn.Dropout(self.dropout),
+                nn.Linear(256, players_dic_len),
+            )
         elif args.pretrained_model == "densenet161":
-            self.fc1 = nn.Sequential(nn.Linear(2208, 256), nn.ReLU(), nn.Dropout(self.dropout),nn.Linear(256, teams_dic_len))
-            self.fc2 = nn.Sequential(nn.Linear(2208, 256), nn.ReLU(), nn.Dropout(self.dropout),nn.Linear(256, players_dic_len))
+            self.fc1 = nn.Sequential(
+                nn.Linear(2208, 256),
+                nn.ReLU(),
+                nn.Dropout(self.dropout),
+                nn.Linear(256, teams_dic_len),
+            )
+            self.fc2 = nn.Sequential(
+                nn.Linear(2208, 256),
+                nn.ReLU(),
+                nn.Dropout(self.dropout),
+                nn.Linear(256, players_dic_len),
+            )
         elif args.pretrained_model == "inceptionresnetv2":
-            self.fc1 = nn.Sequential(nn.Linear(1536, 256), nn.ReLU(), nn.Dropout(self.dropout),nn.Linear(256, teams_dic_len))
-            self.fc2 = nn.Sequential(nn.Linear(1536, 256), nn.ReLU(), nn.Dropout(self.dropout),nn.Linear(256, players_dic_len))
+            self.fc1 = nn.Sequential(
+                nn.Linear(1536, 256),
+                nn.ReLU(),
+                nn.Dropout(self.dropout),
+                nn.Linear(256, teams_dic_len),
+            )
+            self.fc2 = nn.Sequential(
+                nn.Linear(1536, 256),
+                nn.ReLU(),
+                nn.Dropout(self.dropout),
+                nn.Linear(256, players_dic_len),
+            )
 
     def forward(self, x):
         """Defines the labels"""
@@ -65,7 +105,7 @@ class Model(nn.Module):
                 criterions: Returns the criterion used.
                 optimizer: Returns the defined optimizer with parameters values.
         """
-        # For multilabel output: Chosing same criterion here for 'teams' and 'players',
+        # For multilabel output: Choosing same criterion here for 'teams' and 'players',
         # but can change as required
         criterions = {
             phase: nn.CrossEntropyLoss() if phase == "teams" else nn.CrossEntropyLoss()
@@ -103,14 +143,13 @@ class Model(nn.Module):
                 show_plot(bool): Show the plot of training and validation accuracy
                     if show_plot is True.
             Returns:
-                model (Pythorch): Returns the trained Pytorch model on the images dataset.
+                model (Pytorch): Returns the trained Pytorch model on the images dataset.
         """
 
         running_corrects = {}
         running_accuracy = {}
         running_accuracy_record = {"train": [], "valid": []}
         for epoch in range(n_epochs):
-            since = time.time()
             for phase in ["train", "valid"]:
                 if phase == "train":
                     model.train()  # Set model to training mode
@@ -147,13 +186,17 @@ class Model(nn.Module):
                     _, pred_label1 = torch.max(output["label1"], 1)
                     _, pred_label2 = torch.max(output["label2"], 1)
                     equals = (pred_label1 == label1) & (pred_label2 == label2)
-                    running_corrects[phase] += torch.mean(equals.type(torch.FloatTensor)).item()
+                    running_corrects[phase] += torch.mean(
+                        equals.type(torch.FloatTensor)
+                    ).item()
 
                     if phase == "train":
                         loss.backward()
                         optimizer.step()
 
-                running_accuracy[phase] = running_corrects[phase]/len(dataloaders[phase])
+                running_accuracy[phase] = running_corrects[phase] / len(
+                    dataloaders[phase]
+                )
 
             running_accuracy_record["train"].append(running_accuracy["train"])
             running_accuracy_record["valid"].append(running_accuracy["valid"])
@@ -164,7 +207,6 @@ class Model(nn.Module):
                     running_accuracy["valid"],
                 )
             )
-            print(f"time for epoch: {round((time.time() - since) / 60, 2)} mins")
 
         if show_plot:
             plt.plot(range(1, n_epochs + 1), running_accuracy_record["train"])

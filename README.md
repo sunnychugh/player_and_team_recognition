@@ -85,11 +85,15 @@ You need to have Docker installed on your workstation. Installation process depe
   ```
 
 ### Results
+
 ##### Input image:
+
 ![Input Image](images_for_readme/19.jpg)
 
 ##### Colored image sections based on teams:
-![Input Image](images_for_readme/19_team.jpg)
+
+![Colored image with team](images_for_readme/19_team.jpg)
 
 ##### Colored image sections based on player numbers:
-![Input Image](images_for_readme/19_player_no.jpg)
+
+![Colored image with player number](images_for_readme/19_player_no.jpg)
